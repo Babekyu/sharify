@@ -12,6 +12,7 @@ module.exports = {
     'no-unused-vars': 'off',
     'import/extensions': 'off',
     'import/no-unresolved': 'off',
-    'no-console': 'off'
+    'no-console': 'off',
+    'import/prefer-default-export': 'off'
   }
 };

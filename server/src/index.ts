@@ -1,4 +1,5 @@
 import express from 'express';
+import passport from 'passport';
 import { rootHandler, helloHandler } from './handlers';
 
 const app = express();
