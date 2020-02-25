@@ -15,7 +15,9 @@ export interface IUser extends Document {
   username: string;
   hash: string;
   salt: string;
-  validatePassword: (password: string) => boolean
+  validatePassword: (password: string) => boolean,
+  setPassword: (password: string) => boolean,
+  toAuthJSON: () => AuthJSON,
 }
 
 export const UserSchema = new mongoose.Schema({
