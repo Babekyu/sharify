@@ -1,8 +1,8 @@
 /* eslint-disable func-names */
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import crypt from 'crypto';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { HASH_ITERATIONS, HASH_LENGTH } from '../config/constants';
 
 export interface AuthJSON {
   _id: string;
@@ -10,7 +10,15 @@ export interface AuthJSON {
   jwt: string;
 }
 
-const UserSchema = new mongoose.Schema({
+export interface IUser extends Document {
+  email: string;
+  username: string;
+  hash: string;
+  salt: string;
+  validatePassword: (password: string) => boolean
+}
+
+export const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -30,28 +38,14 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.methods.setPassword = function (password: string): boolean {
-  this.salt = crypt.randomBytes(16).toString('hex');
-  this.hash = crypt.pbkdf2Sync(
-    password,
-    this.salt,
-    HASH_ITERATIONS,
-    HASH_LENGTH,
-    'sha512',
-  ).toString('hex');
+  this.salt = bcrypt.genSaltSync();
+  this.hash = bcrypt.hashSync(password, this.salt);
 
   return true;
 };
 
 UserSchema.methods.validatePassword = function (password: string): boolean {
-  const hash = crypt.pbkdf2Sync(
-    password,
-    this.salt,
-    HASH_ITERATIONS,
-    HASH_LENGTH,
-    'sha512',
-  ).toString('hex');
-
-  return hash === this.hash;
+  return bcrypt.compareSync(password, this.password);
 };
 
 UserSchema.methods.generateJWT = function (): string {
@@ -73,3 +67,5 @@ UserSchema.methods.toAuthJSON = function (): AuthJSON {
     jwt: this.generateJWT(),
   };
 };
+
+export default mongoose.model<IUser>('Users', UserSchema);
